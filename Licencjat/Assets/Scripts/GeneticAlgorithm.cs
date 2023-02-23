@@ -16,7 +16,7 @@ public class GeneticAlgorithm : MonoBehaviour
 
     public GameObject[] population;
     public float mutationRate = .010f;
-    System.Random rnd = new System.Random();
+    
 
     void Start()
     {
@@ -30,10 +30,23 @@ public class GeneticAlgorithm : MonoBehaviour
         }
     }
 
+    void bestTime()
+    {
+        var minVal = population.Min(x => x.GetComponent<CarController>().bestTime);
+        Debug.Log(minVal);
+        if(minVal != float.MaxValue && minVal != 0)
+        {
+            var gO = population.SingleOrDefault(x => x.GetComponent<CarController>().bestTime.Equals(minVal));
+            gO.GetComponent<CarController>().fitness += 5;
+        }
+            
+    }
+
     GameObject[] generationFun()
     {
         GameObject[] populationPom = new GameObject[populationSize];
 
+        bestTime();
         startTime = Time.realtimeSinceStartup;
 
         for(int i=0; i < (populationSize); i = i + 2)
@@ -65,8 +78,9 @@ public class GeneticAlgorithm : MonoBehaviour
     //One-point crossover
     (GameObject child1, GameObject child2) Crossover(GameObject car1, GameObject car2)
     {
-        GameObject child1 = Instantiate(carPrefabe, transform.position, transform.rotation); ;
-        GameObject child2 = Instantiate(carPrefabe, transform.position, transform.rotation); ;
+        GameObject child1 = Instantiate(carPrefabe, transform.position, transform.rotation);
+        GameObject child2 = Instantiate(carPrefabe, transform.position, transform.rotation);
+        System.Random rnd = new System.Random();
         int random = rnd.Next(5);
         
         child2.GetComponent<CarController>().maxTurnAngle = (random >= 0) ? car1.GetComponent<CarController>().maxTurnAngle : car2.GetComponent<CarController>().maxTurnAngle;
@@ -86,29 +100,30 @@ public class GeneticAlgorithm : MonoBehaviour
 
     void Mutation(GameObject child)
     {
+        System.Random rnd = new System.Random();
         if (rnd.NextDouble() < mutationRate)
         {
-            child.GetComponent<CarController>().maxTurnAngle = rnd.Next(30, 75);
+            child.GetComponent<CarController>().maxTurnAngle = rnd.Next(30, 85);
         }
 
         if (rnd.NextDouble() < mutationRate)
         {
-            child.GetComponent<CarController>().acceleration = rnd.Next(100, 1000);
+            child.GetComponent<CarController>().acceleration = rnd.Next(50, 1000);
         }
 
         if (rnd.NextDouble() < mutationRate)
         {
-            child.GetComponent<CarController>().breakForce = rnd.Next(100, 500);
+            child.GetComponent<CarController>().breakForce = rnd.Next(50, 200);
         }
 
         if (rnd.NextDouble() < mutationRate)
         {
-            child.GetComponent<CarController>().lookAhead = rnd.Next(15, 35);
+            child.GetComponent<CarController>().lookAhead = rnd.Next(5, 35);
         }
 
         if (rnd.NextDouble() < mutationRate)
         {
-            child.GetComponent<CarController>().controlSensitivity = (float)(rnd.Next(1, 55) / 100);
+            child.GetComponent<CarController>().controlSensitivity = (float)(rnd.Next(3, 55) / 100);
         }
 
     }
@@ -116,17 +131,21 @@ public class GeneticAlgorithm : MonoBehaviour
     //Tournament Selection
     GameObject Selection(int k = 3)
     {
+        System.Random rnd = new System.Random();
         GameObject best = null, x;
 
         for(int i=0; i < k; ++i)
         {
-            Debug.Log("rnd.Next(populationSize) : " + rnd.Next(populationSize));
             x = population[rnd.Next(populationSize)];
             if(best == null || best.GetComponent<CarController>().fitness < x.GetComponent<CarController>().fitness)
             {
                 best = x;
             }
         }
+
+        if (best.GetComponent<CarController>().fitness < 0)
+            best = Selection(k+1);
+
         return best;
     }
 
