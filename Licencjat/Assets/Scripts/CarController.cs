@@ -31,8 +31,6 @@ public class CarController : MonoBehaviour
     public float maxTurnAngle;
     public float breakForce;
     public float lookAhead;
-    public float controlSensitivityAcceleration = 1;
-    public float controlSensitivityAngle = 0;
     public float controlSensitivity;
 
     public float currentAcceleration = 0;
@@ -45,20 +43,18 @@ public class CarController : MonoBehaviour
 
     public float bestTime = float.MaxValue;
     private float time = 0;
+    private float minSpeedToBrake = 10f;
 
     public void setRandom()
     {
-        maxTurnAngle = Random.Range(30, 85);
-        acceleration = Random.Range(50, 1000);
-        breakForce = Random.Range(50, 200);
-        lookAhead = Random.Range(5, 35);
-        controlSensitivity = Random.Range(.03f, .055f);
+        acceleration =       Random.Range(1, 1000);
+        maxTurnAngle =       Random.Range(5, 85);
+        breakForce =         Random.Range(1, 500);
+        lookAhead =          Random.Range(1, 15);
+        controlSensitivity = Random.Range(.01f, .085f);
     }
     private void Start()
     {
-        if (acceleration.Equals(500))
-            Debug.Log("500");
-        controlSensitivityAcceleration = 1;
         layerMask = ~layerMask;
         setWaypoints();
     }
@@ -77,7 +73,7 @@ public class CarController : MonoBehaviour
         target = ArrayWaypoints[0];
         meta = ArrayWaypoints[sizeOfArrayWaypoints-1];
 
-        Debug.LogWarning("META: " + meta.name);
+        //Debug.LogWarning("META: " + meta.name);
     }
 
     private void Update()
@@ -89,40 +85,48 @@ public class CarController : MonoBehaviour
     void FixedUpdate()
     {
         float speed = Vector3.Magnitude( this.GetComponent<Rigidbody>().velocity);
-        Debug.Log("SPEED: " + Mathf.RoundToInt((speed)) + " KM/H");
+        //Debug.Log("SPEED: " + Mathf.RoundToInt((speed)) + " KM/H");
 
         RaycastHit hit;
         
         if (!wall)
         {
-            //Debug.DrawRay(rayForward.transform.position, this.target.transform.position, Color.green);
+            Debug.DrawRay(rayForward.transform.position, this.target.transform.position, Color.green);
             Debug.DrawRay(rayForward.transform.position, rayForward.transform.TransformDirection(Vector3.forward) * lookAhead, Color.red);
 
             if (Physics.Raycast(rayForward.transform.position, rayForward.transform.TransformDirection(Vector3.forward), out hit, lookAhead, layerMask))
             {
+                braking = true;
                 currentBreakForce = breakForce * (1 - Vector3.Distance(rayForward.transform.position, hit.transform.position) / lookAhead);
             }
             else
             {
+                braking = false;
                 currentBreakForce = 0;
             }
 
-            
             {
                 Vector3 rV = transform.InverseTransformPoint(this.target.transform.position);
                 currentTurnAngle = maxTurnAngle * ((((rV.x / rV.magnitude))) - (((rV.x / rV.magnitude)) * controlSensitivity));
-                //currentTurnAngle = maxTurnAngle * (rV.x / rV.magnitude);
-                currentAcceleration = acceleration * controlSensitivityAcceleration;
-                //Debug.Log(currentAcceleration + " = " + acceleration + " * " + controlSensitivityAcceleration);
+                if(currentAcceleration < acceleration)
+                    currentAcceleration += (controlSensitivity * 100);
             }
 
-            /**/
-
             if (braking)
-                currentBreakForce = breakForce;
+            {
+                if (speed > minSpeedToBrake)
+                {
+                    currentBreakForce = breakForce * 2;
+                }
+                else
+                {
+                    currentBreakForce = breakForce;
+                }
+            }
             else
+            {
                 currentBreakForce = 0f;
-            
+            }
 
             {
                 frontLeft.motorTorque = currentAcceleration;
@@ -181,15 +185,19 @@ public class CarController : MonoBehaviour
                 targetP = 0;
             target = ArrayWaypoints[targetP];
         }
+        Debug.Log(target.name);
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        if(!wall)
-            this.fitness -= 5;
-        wall = true;
-        braking = true;
-        
+        //TUTAJ
+        if(!(collision.gameObject.name.Equals("Cube")))
+        {
+            if (!wall)
+                this.fitness -= 5;
+            wall = true;
+            braking = true;
+        }
     }
 
     private void UpdateWheel(WheelCollider col, Transform transform)

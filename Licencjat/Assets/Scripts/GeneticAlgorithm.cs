@@ -15,7 +15,7 @@ public class GeneticAlgorithm : MonoBehaviour
     public float generationTime = 60;
 
     public GameObject[] population;
-    public float mutationRate = .010f;
+    public float mutationRate = .01f;
     
 
     void Start()
@@ -36,7 +36,7 @@ public class GeneticAlgorithm : MonoBehaviour
         Debug.Log(minVal);
         if(minVal != float.MaxValue && minVal != 0)
         {
-            var gO = population.SingleOrDefault(x => x.GetComponent<CarController>().bestTime.Equals(minVal));
+            var gO = population.FirstOrDefault(x => x.GetComponent<CarController>().bestTime.Equals(minVal));
             gO.GetComponent<CarController>().fitness += 5;
         }
             
@@ -76,23 +76,23 @@ public class GeneticAlgorithm : MonoBehaviour
     }
 
     //One-point crossover
-    (GameObject child1, GameObject child2) Crossover(GameObject car1, GameObject car2)
+    (GameObject, GameObject) Crossover(GameObject car1, GameObject car2)
     {
         GameObject child1 = Instantiate(carPrefabe, transform.position, transform.rotation);
         GameObject child2 = Instantiate(carPrefabe, transform.position, transform.rotation);
         System.Random rnd = new System.Random();
         int random = rnd.Next(5);
         
-        child2.GetComponent<CarController>().maxTurnAngle = (random >= 0) ? car1.GetComponent<CarController>().maxTurnAngle : car2.GetComponent<CarController>().maxTurnAngle;
-        child2.GetComponent<CarController>().acceleration = (random >= 1) ? car1.GetComponent<CarController>().acceleration : car2.GetComponent<CarController>().acceleration;
-        child1.GetComponent<CarController>().breakForce = (random >= 2) ? car1.GetComponent<CarController>().breakForce : car2.GetComponent<CarController>().breakForce;
-        child1.GetComponent<CarController>().lookAhead = (random >= 3) ? car1.GetComponent<CarController>().lookAhead : car2.GetComponent<CarController>().lookAhead;
+        child1.GetComponent<CarController>().maxTurnAngle = (random >= 0) ? car1.GetComponent<CarController>().maxTurnAngle : car2.GetComponent<CarController>().maxTurnAngle;
+        child1.GetComponent<CarController>().breakForce = (random >= 1) ? car1.GetComponent<CarController>().breakForce : car2.GetComponent<CarController>().breakForce;
+        child1.GetComponent<CarController>().lookAhead = (random >= 2) ? car1.GetComponent<CarController>().lookAhead : car2.GetComponent<CarController>().lookAhead;
+        child1.GetComponent<CarController>().acceleration = (random >= 3) ? car1.GetComponent<CarController>().acceleration : car2.GetComponent<CarController>().acceleration;
         child1.GetComponent<CarController>().controlSensitivity = (random >= 4) ? car1.GetComponent<CarController>().controlSensitivity : car2.GetComponent<CarController>().controlSensitivity;
 
         child2.GetComponent<CarController>().maxTurnAngle = (random >= 0) ? car2.GetComponent<CarController>().maxTurnAngle : car1.GetComponent<CarController>().maxTurnAngle;
-        child2.GetComponent<CarController>().acceleration = (random >= 1) ? car2.GetComponent<CarController>().acceleration : car1.GetComponent<CarController>().acceleration;
-        child2.GetComponent<CarController>().breakForce = (random >= 2) ? car2.GetComponent<CarController>().breakForce : car1.GetComponent<CarController>().breakForce;
-        child2.GetComponent<CarController>().lookAhead = (random >= 3) ? car2.GetComponent<CarController>().lookAhead : car1.GetComponent<CarController>().lookAhead;
+        child2.GetComponent<CarController>().breakForce = (random >= 1) ? car2.GetComponent<CarController>().breakForce : car1.GetComponent<CarController>().breakForce;
+        child2.GetComponent<CarController>().lookAhead = (random >= 2) ? car2.GetComponent<CarController>().lookAhead : car1.GetComponent<CarController>().lookAhead;
+        child2.GetComponent<CarController>().acceleration = (random >= 3) ? car2.GetComponent<CarController>().acceleration : car1.GetComponent<CarController>().acceleration;
         child2.GetComponent<CarController>().controlSensitivity = (random >= 4) ? car2.GetComponent<CarController>().controlSensitivity : car1.GetComponent<CarController>().controlSensitivity;
         
         return (child1, child2);
@@ -151,7 +151,7 @@ public class GeneticAlgorithm : MonoBehaviour
 
     private void Update()
     {
-        textMesh.text = "Generation: " + generation + "\n" + "Time: " + Time.realtimeSinceStartup % generationTime;
+        textMesh.text = "Generation: " + generation + "\n" + "Time: " + Math.Round((Time.realtimeSinceStartup % generationTime), 2);
 
         if (Time.realtimeSinceStartup > startTime + generationTime)
         {
