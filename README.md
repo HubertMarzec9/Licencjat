@@ -1,1 +1,2 @@
 # Licencjat
+Projekt korzysta z programu "Unity Hub" oraz silnika Unity w wersji "2021.3.16f1". Aby uruchomić projekt w aplikacji "Unity Hub", przejdź do zakładki "Projects" i kliknij przycisk "Open", a następnie wybierz projekt.
