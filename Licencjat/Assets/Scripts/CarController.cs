@@ -23,8 +23,6 @@ public class CarController : MonoBehaviour
 
     public GameObject rayForward;
 
-    /// 
-
     public float fitness = 0;
 
     public float acceleration;
@@ -64,28 +62,22 @@ public class CarController : MonoBehaviour
 
         foreach (Transform child in waypoints.transform)
         {
-            //Debug.Log(child.gameObject.name);
             ArrayWaypoints[sizeOfArrayWaypoints] = child.gameObject;
-            //Debug.Log(ArrayWaypoints[sizeOfArrayWaypoints].name);
             sizeOfArrayWaypoints++;
         }
 
         target = ArrayWaypoints[0];
         meta = ArrayWaypoints[sizeOfArrayWaypoints-1];
-
-        //Debug.LogWarning("META: " + meta.name);
     }
 
     private void Update()
     {
         time += Time.deltaTime;
-        //Debug.Log(time);
     }
 
     void FixedUpdate()
     {
         float speed = Vector3.Magnitude( this.GetComponent<Rigidbody>().velocity);
-        //Debug.Log("SPEED: " + Mathf.RoundToInt((speed)) + " KM/H");
 
         RaycastHit hit;
         
@@ -185,12 +177,10 @@ public class CarController : MonoBehaviour
                 targetP = 0;
             target = ArrayWaypoints[targetP];
         }
-        Debug.Log(target.name);
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        //TUTAJ
         if(!(collision.gameObject.name.Equals("Cube")))
         {
             if (!wall)

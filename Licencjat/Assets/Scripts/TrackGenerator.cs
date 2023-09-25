@@ -10,9 +10,12 @@ public class TrackGenerator : MonoBehaviour
 
     private List<Vector3> vectors = new List<Vector3>();
     private int[] vectorsR;
+    private int time;
 
     void Start()
     {
+        time = (int) GameObject.Find("Values").GetComponent<wartosc>().c;
+        count = (int) (time * .8f - 2);
         vectorsR = new int[count];
         wayPoints(count);
         draw();
@@ -29,7 +32,6 @@ public class TrackGenerator : MonoBehaviour
         GameObject gameObject = Instantiate(wayP, poz, rot);
         gameObject.name = ("Waypoint_" + 0);
         gameObject.transform.SetParent(waypoints.transform, false);
-        //vectors.Add(poz);
         vectorsR[0] = rnd.Next(15) + 5;
 
         for (int i=1;i<count;i++)
@@ -40,6 +42,11 @@ public class TrackGenerator : MonoBehaviour
             gameObject = Instantiate(wayP, poz, rot);
             gameObject.name = ("Waypoint_" + i);
             gameObject.transform.SetParent(waypoints.transform, false);
+
+            float newScaleX = 25.0f;
+            Vector3 currentScale = gameObject.transform.localScale;
+            gameObject.transform.localScale = new Vector3(newScaleX, currentScale.y, currentScale.z);
+
         }
     }
 
@@ -48,26 +55,14 @@ public class TrackGenerator : MonoBehaviour
         Vector3 poz = this.transform.position;
         foreach (Vector3 vector in vectors)
         {
-            Vector3 start = new Vector3(poz.x, 0, poz.z); // Pozycja pocz¹tkowa
-            Vector3 end = new Vector3(vector.x, 0, vector.z); // Pozycja koñcowa
+            Vector3 start = new Vector3(poz.x, 0, poz.z);
+            Vector3 end = new Vector3(vector.x, 0, vector.z);
             Debug.DrawLine(start, end, Color.red);
             poz = vector;
         }
 
     }
-     /*
-    void draw()
-    {
-        Vector3 poz = this.transform.position;
-        foreach (Vector3 vector in vectors)
-        {
-            Debug.Log(poz.x + " " + poz.z + " " + vector.x + " " + vector.z);
-            add(poz.x,poz.z, vector.x,vector.z);
-            poz = vector;
-        }
 
-    }
-   */
     void draw()
     {
         Vector3 poz = this.transform.position;
@@ -84,20 +79,17 @@ public class TrackGenerator : MonoBehaviour
 
     void add(float x1, float z1, float x2, float z2)
     {
-        Vector3 start = new Vector3(x1, 0, z1); // Pozycja pocz¹tkowa
-        Vector3 end = new Vector3(x2, 0, z2); // Pozycja koñcowa
+        Vector3 start = new Vector3(x1, 0, z1);
+        Vector3 end = new Vector3(x2, 0, z2);
         Debug.DrawLine(start, end, Color.red, 0);
         float lineLength = Vector3.Distance(start, end);
 
-        // Rysowanie linii
         Debug.DrawLine(start, end, Color.red);
 
-        // Tworzenie cylindra
         GameObject cylinder = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
         cylinder.transform.position = (start + end) / 2;
         cylinder.transform.localScale = new Vector3(lineLength, 3f, 0.1f);
 
-        // Obracanie cylindra
         Vector3 direction = end - start;
         cylinder.transform.rotation = Quaternion.FromToRotation(Vector3.right, direction);
 
